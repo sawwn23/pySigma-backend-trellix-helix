@@ -27,7 +27,7 @@ class tqlBackend(TextQueryBackend):
     or_token : ClassVar[str] = "OR"
     and_token : ClassVar[str] = "AND"
     not_token : ClassVar[str] = "NOT"
-    eq_token : ClassVar[str] = "=" 
+    eq_token : ClassVar[str] = ":" 
 
     # String output
     ## Fields

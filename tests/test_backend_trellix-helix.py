@@ -6,7 +6,6 @@ from sigma.backends.trellixhelix import tqlBackend
 def trellixhelix_backend():
     return tqlBackend()
 
-# TODO: implement tests for some basic queries and their expected results.
 def test_trellixhelix_and_expression(trellixhelix_backend : tqlBackend):
     assert trellixhelix_backend.convert(
         SigmaCollection.from_yaml("""
@@ -21,7 +20,7 @@ def test_trellixhelix_and_expression(trellixhelix_backend : tqlBackend):
                     ParentImage: valueB
                 condition: sel
         """)
-    ) == ['category="process create" AND (class="ms_windows_event" AND (process="valueA" AND pprocess="valueB"))']
+    ) == ['(category : ["process create (rule: processcreate)","process creation"]) AND (metaclass:"windows" AND (process:"valueA" AND pprocess:"valueB"))']
 
 # def test_trellixhelix_or_expression(trellixhelix_backend : tqlBackend):
 #     assert trellixhelix_backend.convert(

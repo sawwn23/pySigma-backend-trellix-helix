@@ -5,33 +5,71 @@ from sigma.processing.pipeline import ProcessingItem, ProcessingPipeline
 from sigma.rule import SigmaDetectionItem
 from sigma.exceptions import SigmaTransformationError
 
-class InvalidTransformation(DetectionItemFailureTransformation):
+class InvalidFieldTransformation(DetectionItemFailureTransformation):
     def apply_detection_item(self, detection_item: SigmaDetectionItem) -> None:
         fiele_name = detection_item.field
         self.message = f"Invalid fieldname encounter: {fiele_name}." + self.message
         raise SigmaTransformationError(self.message)
 
+def _flatten(items, seqtypes=(list, tuple)):
+    """Private function to flatten lists for Field mapping errors"""
+    try:
+        for i, x in enumerate(items):
+            while isinstance(items[i], seqtypes):
+                items[i:i+1] = items[i]
+    except IndexError:
+        pass
+    return items
+
 def trellix_helix_pipeline() -> ProcessingPipeline:
     translation_dict = {
-        'process_creation':{
-            "EventId"
-            "ProcessGuid":"processguid",
-            "ProcessId":"pid",
-            "Image":"process",
+        'windows_events':{
+            "AccountDomain": "accountdomain",
+            "AccountName": "accountdomain",
+            "Application": "process.executable",
+            "Channel": "eventlog",
+            "ClientAddress": "srcipv4",
             "CommandLine":"args",
+            "ComputerName": "hostname",
             "CurrentDirectory":"",
-            "User":"username",
-            "LogonGuid":"logonguid",
-            "LogonId":"loginid",
+            "DestAddress": "dstipv4",
+            "DestinationIp": "dstipv4",
+            "DestinationPort": "dstport",
+            "DestPort": "dstport",
+            "EventID": "eventid",
+            "FileName": "filename",
+            "Image": "process",
+            "imphash": "imphash",
+            "IntegrityLevel": "integritylevel",
+            "IpAddress": "srcipv4",
+            "IpPort": "srcport",
+            "LogonGuid": "logonguid",
+            "LogonId": "loginid",
+            "md5": "md5",
+            "NewProcessId": "pid",
+            "NewProcessName": "process",
+            "ParentCommandLine": "pargs",
+            "ParentImage": "pprocess",
+            "ParentProcessGuid": "pprocessguid",
+            "ParentProcessId": "ppid",
+            "ParentProcessName": "process.parent.name",
+            "PipeName": "filename",
+            "ProcessGuid": "processguid",
+            "ProcessId": "pid",
+            "ProcessName": "process",
+            "Provider_Name": "source",
+            "QueryName": "query",
+            "QueryStatus": "statuscode",
+            "sha256": "sha256",
+            "SourceAddress": "srcipv4",
+            "SourceHostname": "hostname",
+            "SourceIp": "srcipv4",
+            "SourcePort": "srcport",
+            "SourceThreadId": "threadid",
+            "TargetDomainName": "accountdomain",
+            "TargetFilename": "filename",
             "TerminalSessionId":"sessionid",
-            "IntegrityLevel":"integritylevel",
-            "imphash":"imphash",
-            "md5":"md5",
-            "sha256":"sha256",
-            "ParentProcessGuid":"pprocessguid",
-            "ParentProcessId":"ppid",
-            "ParentImage":"pprocess",
-            "ParentCommandLine":"pargs"
+            "User": "username"
         }
         #need to add other events
     }
@@ -41,7 +79,7 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
         ProcessingItem(
             identifier="trellix_class_windows",
             transformation=AddConditionTransformation({
-                "class": "ms_windows_event"
+                "metaclass": "windows"
             }),
             rule_conditions=[
                 LogsourceCondition(product="windows")
@@ -55,94 +93,103 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
         ProcessingItem(
             identifier="trellix_process_creation_eventtype",
             transformation=AddConditionTransformation({
-                "category": "process create"
+                "category": ["process create (rule: processcreate)","process creation"]
             }),
             rule_conditions=[
                 LogsourceCondition(category="process_creation")
             ]
-        )
+        ),
         # need to add others category
+        ProcessingItem(
+            identifier="trellix_create_remote_thread_eventtype",
+            transformation=AddConditionTransformation({
+                "category": "TODO"
+            }),
+            rule_conditions=[
+                LogsourceCondition(category="create_remote_thread")
+            ]
+        )
     ]
 
     fields_mappings = [
         # Process Creation
         ProcessingItem(
             identifier="helix_process_creation_mapping",
-            transformation=FieldMappingTransformation(translation_dict['process_creation']),
+            transformation=FieldMappingTransformation(translation_dict['windows_events']),
             rule_conditions=[
-                LogsourceCondition(category="process_creation")
+                LogsourceCondition(product="windows")
             ]
         )
         # more stuff
     ]
 
-    # change_logsource_info = [
-    #     # Add service to be SentinelOne for pretty much everything
-    #     ProcessingItem(
-    #         identifier="helix_logsource",
-    #         transformation=ChangeLogsourceTransformation(
-    #             service="sentinelone"
-    #         ),
-    #         rule_condition_linking=any,
-    #         rule_conditions=[
-    #             LogsourceCondition(category="process_creation"),
-    #             LogsourceCondition(category="file_change"),
-    #             LogsourceCondition(category="file_rename"),
-    #             LogsourceCondition(category="file_delete"),
-    #             LogsourceCondition(category="file_event"),
-    #             LogsourceCondition(category="image_load"),
-    #             LogsourceCondition(category="pipe_creation"),
-    #             LogsourceCondition(category="registry_add"),
-    #             LogsourceCondition(category="registry_delete"),
-    #             LogsourceCondition(category="registry_event"),
-    #             LogsourceCondition(category="registry_set"),
-    #             LogsourceCondition(category="dns"),
-    #             LogsourceCondition(category="dns_query"),
-    #             LogsourceCondition(category="network_connection"),
-    #             LogsourceCondition(category="firewall")
-    #         ]
-    #     ),
-    # ]
+    change_logsource_info = [
+        # Add service to be Helix for pretty much everything
+        ProcessingItem(
+            identifier="helix_logsource",
+            transformation=ChangeLogsourceTransformation(
+                service="helix"
+            ),
+            rule_condition_linking=any,
+            rule_conditions=[
+                LogsourceCondition(category="process_creation")
+                # LogsourceCondition(category="file_change"),
+                # LogsourceCondition(category="file_rename"),
+                # LogsourceCondition(category="file_delete"),
+                # LogsourceCondition(category="file_event"),
+                # LogsourceCondition(category="image_load"),
+                # LogsourceCondition(category="pipe_creation"),
+                # LogsourceCondition(category="registry_add"),
+                # LogsourceCondition(category="registry_delete"),
+                # LogsourceCondition(category="registry_event"),
+                # LogsourceCondition(category="registry_set"),
+                # LogsourceCondition(category="dns"),
+                # LogsourceCondition(category="dns_query"),
+                # LogsourceCondition(category="network_connection"),
+                # LogsourceCondition(category="firewall")
+            ]
+        ),
+    ]
 
-    # unsupported_rule_types = [
-    #     # Show error if unsupported option
-    #     ProcessingItem(
-    #         identifier="helix_fail_rule_not_supported",
-    #         rule_condition_linking=any,
-    #         transformation=RuleFailureTransformation("Rule type not yet supported by the Helix Sigma backend"),
-    #         rule_condition_negation=True,
-    #         rule_conditions=[
-    #             RuleProcessingItemAppliedCondition("s1_logsource")
-    #         ]
-    #     )
-    # ]
+    unsupported_rule_types = [
+        # Show error if unsupported option
+        ProcessingItem(
+            identifier="helix_fail_rule_not_supported",
+            rule_condition_linking=any,
+            transformation=RuleFailureTransformation("Rule type not yet supported by the Helix Sigma backend"),
+            rule_condition_negation=True,
+            rule_conditions=[
+                RuleProcessingItemAppliedCondition("helix_logsource")
+            ]
+        )
+    ]
 
-    # unsupported_field_name = [
-    #     ProcessingItem(
-    #         identifier='s1_fail_field_not_supported',
-    #         transformation=InvalidFieldTransformation("This pipeline only supports the following fields:\n{" + 
-    #         '}, {'.join(sorted(set(
-    #             list(_flatten([[k,v] for t in translation_dict.keys() for k, v in
-    #                            translation_dict[t].items()])) + general_supported_fields
-    #         )))),
-    #         field_name_conditions=[
-    #             ExcludeFieldCondition(fields=list(set(
-    #                 list(_flatten([[k, v] for t in translation_dict.keys() for k, v in
-    #                                translation_dict[t].items()])) + general_supported_fields
-    #             )))
-    #         ]
-    #     )
-    # ]
+    unsupported_field_name = [
+        ProcessingItem(
+            identifier='helix_fail_field_not_supported',
+            transformation=InvalidFieldTransformation("This pipeline only supports the following fields:\n{" + 
+            '}, {'.join(sorted(set(
+                list(_flatten([[k,v] for t in translation_dict.keys() for k, v in
+                               translation_dict[t].items()]))
+            )))),
+            field_name_conditions=[
+                ExcludeFieldCondition(fields=list(set(
+                    list(_flatten([[k, v] for t in translation_dict.keys() for k, v in
+                                   translation_dict[t].items()]))
+                )))
+            ]
+        )
+    ]
 
     return ProcessingPipeline(
         name="Trellix_Helix pipeline",
         priority=50,
         items = [
-            # *unsupported_field_name,
+            *unsupported_field_name,
             *object_class_filter,
             *object_eventlog_filter,
             *fields_mappings,
-            # *change_logsource_info,
-            # *unsupported_rule_types,
+            *change_logsource_info,
+            *unsupported_rule_types,
         ]
     )
