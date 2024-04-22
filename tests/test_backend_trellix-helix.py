@@ -125,7 +125,7 @@ def test_trellixhelix_cidr_query(trellixhelix_backend : tqlBackend):
                     DestinationIp|cidr: 192.168.0.0/16
                 condition: sel
         """)
-    ) == ['category:"dns query (rule: dnsquery)" AND (metaclass:"windows" AND dstipv4:192.168.0.0/16)']
+    ) == ['category:"dns query (rule: dnsquery)" AND (metaclass:"windows" AND dstipv4:192.168.0.0/16 )']
 
 # def test_trellixhelix_field_name_with_whitespace(trellixhelix_backend : tqlBackend):
 #     assert trellixhelix_backend.convert(
