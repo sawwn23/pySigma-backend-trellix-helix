@@ -1,26 +1,26 @@
 name: Test
 on:
   push:
-    branches: [ "*" ]
+    branches: ["*"]
   pull_request:
-    branches: [ "*" ]
+    branches: ["*"]
   workflow_dispatch:
 
 jobs:
   test:
     strategy:
       matrix:
-        os: [ 'ubuntu-20.04' ]
-        python-version: [ '3.8', '3.9', '3.10', '3.11' ]
+        os: ["ubuntu-20.04"]
+        python-version: ["3.8", "3.9", "3.10"]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
-      - name: Install Poetry
-        run: pipx install poetry
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Install Poetry
+        run: pipx install poetry
       - name: Install dependencies
         run: poetry install
       - name: Run tests
@@ -33,8 +33,8 @@ jobs:
         uses: schneegans/dynamic-badges-action@v1.1.0
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: GitHub Gist identifier containing coverage badge JSON expected by shields.io.
-          filename: sawwn23-pySigma-backend-trellix-helix.json
+          gistID: 1924fa4d1c76d11df9dca6891eb60ac8
+          filename: SigmaHQ-pySigma-backend-trellix-helix.json
           label: Coverage
           message: ${{ env.COVERAGE }}
           color: ${{ env.COVERAGE_COLOR }}
