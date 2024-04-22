@@ -62,6 +62,9 @@ class tqlBackend(TextQueryBackend):
     re_escape_escape_char : bool = True
     re_flag_prefix : bool = True
 
+    #CIDR
+    cidr_expression : ClassVar[str] = "{field}:{value} "
+
     # Numeric comparison operators
     compare_op_expression : ClassVar[str] = "{field} {operator} {value}" 
     # Mapping between CompareOperators elements and strings used as replacement for {operator} in compare_op_expression

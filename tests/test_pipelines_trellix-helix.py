@@ -6,7 +6,7 @@ from sigma.backends.trellixhelix import tqlBackend
 def trellixhelix_backend():
     return tqlBackend()
 
-def test_sentinelone_unsupported_rule_type(trellixhelix_backend : tqlBackend):
+def test_helix_unsupported_rule_type(trellixhelix_backend : tqlBackend):
   with pytest.raises(ValueError):
     trellixhelix_backend.convert(
         SigmaCollection.from_yaml("""
@@ -25,7 +25,7 @@ def test_sentinelone_unsupported_rule_type(trellixhelix_backend : tqlBackend):
         """)
     )
 
-def test_sentinelone_unsupported_field_name(trellixhelix_backend : tqlBackend):
+def test_helix_unsupported_field_name(trellixhelix_backend : tqlBackend):
   with pytest.raises(ValueError):
     trellixhelix_backend.convert(
         SigmaCollection.from_yaml("""

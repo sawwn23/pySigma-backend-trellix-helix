@@ -9,7 +9,7 @@ def trellixhelix_backend():
 def test_trellixhelix_and_expression(trellixhelix_backend : tqlBackend):
     assert trellixhelix_backend.convert(
         SigmaCollection.from_yaml("""
-            title: Test
+            title: AND Test
             status: test
             logsource:
                 product: windows
@@ -22,110 +22,110 @@ def test_trellixhelix_and_expression(trellixhelix_backend : tqlBackend):
         """)
     ) == ['(category : ["process create (rule: processcreate)","process creation"]) AND (metaclass:"windows" AND (process:"valueA" AND pprocess:"valueB"))']
 
-# def test_trellixhelix_or_expression(trellixhelix_backend : tqlBackend):
-#     assert trellixhelix_backend.convert(
-#         SigmaCollection.from_yaml("""
-#             title: Test
-#             status: test
-#             logsource:
-#                 category: test_category
-#                 product: test_product
-#             detection:
-#                 sel1:
-#                     fieldA: valueA
-#                 sel2:
-#                     fieldB: valueB
-#                 condition: 1 of sel*
-#         """)
-#     ) == ['<insert expected result here>']
+def test_trellixhelix_or_expression(trellixhelix_backend : tqlBackend):
+    assert trellixhelix_backend.convert(
+        SigmaCollection.from_yaml("""
+            title: OR Test
+            status: test
+            logsource:
+                product: windows
+                category: dns_query
+            detection:
+                sel1:
+                    Image|startswith: valueA
+                sel2:
+                    QueryName|endswith: valueB
+                condition: 1 of sel*
+        """)
+    ) == ['category:"dns query (rule: dnsquery)" AND (metaclass:"windows" AND (process:"valueA*" OR query:"*valueB"))']
 
-# def test_trellixhelix_and_or_expression(trellixhelix_backend : tqlBackend):
-#     assert trellixhelix_backend.convert(
-#         SigmaCollection.from_yaml("""
-#             title: Test
-#             status: test
-#             logsource:
-#                 category: test_category
-#                 product: test_product
-#             detection:
-#                 sel:
-#                     fieldA:
-#                         - valueA1
-#                         - valueA2
-#                     fieldB:
-#                         - valueB1
-#                         - valueB2
-#                 condition: sel
-#         """)
-#     ) == ['<insert expected result here>']
+def test_trellixhelix_and_or_expression(trellixhelix_backend : tqlBackend):
+    assert trellixhelix_backend.convert(
+        SigmaCollection.from_yaml("""
+            title: AND OR Test
+            status: test
+            logsource:
+                category: process_creation
+                product: windows 
+            detection:
+                sel:
+                    Image:
+                        - valueA1
+                        - valueA2
+                    ParentImage:
+                        - valueB1
+                        - valueB2
+                condition: sel
+        """)
+    ) == ['(category : ["process create (rule: processcreate)","process creation"]) AND (metaclass:"windows" AND ((process : ["valueA1","valueA2"]) AND (pprocess : ["valueB1","valueB2"])))']
 
-# def test_trellixhelix_or_and_expression(trellixhelix_backend : tqlBackend):
-#     assert trellixhelix_backend.convert(
-#         SigmaCollection.from_yaml("""
-#             title: Test
-#             status: test
-#             logsource:
-#                 category: test_category
-#                 product: test_product
-#             detection:
-#                 sel1:
-#                     fieldA: valueA1
-#                     fieldB: valueB1
-#                 sel2:
-#                     fieldA: valueA2
-#                     fieldB: valueB2
-#                 condition: 1 of sel*
-#         """)
-#     ) == ['<insert expected result here>']
+def test_trellixhelix_or_and_expression(trellixhelix_backend : tqlBackend):
+    assert trellixhelix_backend.convert(
+        SigmaCollection.from_yaml("""
+            title: OR AND Test
+            status: test
+            logsource:
+                category: process_creation 
+                product: windows 
+            detection:
+                sel1:
+                    Image: valueA1
+                    ParentImage: valueB1
+                sel2:
+                    Image: valueA2
+                    ParentImage: valueB2
+                condition: 1 of sel*
+        """)
+    ) == ['(category : ["process create (rule: processcreate)","process creation"]) AND (metaclass:"windows" AND ((process:"valueA1" AND pprocess:"valueB1") OR (process:"valueA2" AND pprocess:"valueB2")))']
 
-# def test_trellixhelix_in_expression(trellixhelix_backend : tqlBackend):
-#     assert trellixhelix_backend.convert(
-#         SigmaCollection.from_yaml("""
-#             title: Test
-#             status: test
-#             logsource:
-#                 category: test_category
-#                 product: test_product
-#             detection:
-#                 sel:
-#                     fieldA:
-#                         - valueA
-#                         - valueB
-#                         - valueC*
-#                 condition: sel
-#         """)
-#     ) == ['<insert expected result here>']
+def test_trellixhelix_in_expression(trellixhelix_backend : tqlBackend):
+    assert trellixhelix_backend.convert(
+        SigmaCollection.from_yaml("""
+            title: IN Test
+            status: test
+            logsource:
+                category: process_creation 
+                product: windows 
+            detection:
+                sel:
+                    Image:
+                        - valueA
+                        - valueB
+                        - valueC*
+                condition: sel
+        """)
+    ) == ['(category : ["process create (rule: processcreate)","process creation"]) AND (metaclass:"windows" AND (process : ["valueA","valueB","valueC*"]))']
 
-# def test_trellixhelix_regex_query(trellixhelix_backend : tqlBackend):
-#     assert trellixhelix_backend.convert(
-#         SigmaCollection.from_yaml("""
-#             title: Test
-#             status: test
-#             logsource:
-#                 category: test_category
-#                 product: test_product
-#             detection:
-#                 sel:
-#                     fieldA|re: foo.*bar
-#                     fieldB: foo
-#                 condition: sel
-#         """)
-#     ) == ['<insert expected result here>']
+def test_trellixhelix_regex_query(trellixhelix_backend : tqlBackend):
+    assert trellixhelix_backend.convert(
+        SigmaCollection.from_yaml("""
+            title: REGEX Test
+            status: test
+            logsource:
+                category: process_creation 
+                product: windows 
+            detection:
+                sel:
+                    Image|re: foo.*bar
+                    ParentImage: foo
+                condition: sel
+        """)
+    ) == ['(category : ["process create (rule: processcreate)","process creation"]) AND (metaclass:"windows" AND (process:"foo.*bar" AND pprocess:"foo"))']
 
-# def test_trellixhelix_cidr_query(trellixhelix_backend : tqlBackend):
-#     assert trellixhelix_backend.convert(
-#         SigmaCollection.from_yaml("""
-#             title: Test
-#             status: test
-#             logsource:
-#                 category: test_category
-#                 product: test_product
-#             detection:
-#                 sel:
-#                     field|cidr: 192.168.0.0/16
-#                 condition: sel
-#         """)
-#     ) == ['<insert expected result here>']
+def test_trellixhelix_cidr_query(trellixhelix_backend : tqlBackend):
+    assert trellixhelix_backend.convert(
+        SigmaCollection.from_yaml("""
+            title: CIDR Test
+            status: test
+            logsource:
+                category: dns_query
+                product: windows
+            detection:
+                sel:
+                    DestinationIp|cidr: 192.168.0.0/16
+                condition: sel
+        """)
+    ) == ['category:"dns query (rule: dnsquery)" AND (metaclass:"windows" AND dstipv4:192.168.0.0/16)']
 
 # def test_trellixhelix_field_name_with_whitespace(trellixhelix_backend : tqlBackend):
 #     assert trellixhelix_backend.convert(
@@ -133,11 +133,11 @@ def test_trellixhelix_and_expression(trellixhelix_backend : tqlBackend):
 #             title: Test
 #             status: test
 #             logsource:
-#                 category: test_category
-#                 product: test_product
+#                 category: process_create 
+#                 product: windows 
 #             detection:
 #                 sel:
-#                     field name: value
+#                     Parent Image: value
 #                 condition: sel
 #         """)
 #     ) == ['<insert expected result here>']
