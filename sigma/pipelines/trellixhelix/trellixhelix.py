@@ -84,8 +84,35 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
             rule_conditions=[
                 LogsourceCondition(product="windows")
             ]
-        )
+        ),
         # need to add other class
+        ProcessingItem(
+            identifier="trellix_class_linux",
+            transformation=AddConditionTransformation({
+                "metaclass": "unix"
+            }),
+            rule_conditions=[
+                LogsourceCondition(product="linux")
+            ]
+        ),
+        ProcessingItem(
+            identifier="trellix_class_network",
+            transformation=AddConditionTransformation({
+                "metaclass": "network"
+            }),
+            rule_conditions=[
+                LogsourceCondition(product="network")
+            ]
+        ),
+        ProcessingItem(
+            identifier="trellix_class_web",
+            transformation=AddConditionTransformation({
+                "metaclass": "unix"
+            }),
+            rule_conditions=[
+                LogsourceCondition(product="webserver")
+            ]
+        )
     ]
 
     object_eventlog_filter = [
@@ -100,13 +127,76 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
             ]
         ),
         # need to add others category
+        # ProcessingItem(
+        #     identifier="trellix_create_remote_thread_eventtype",
+        #     transformation=AddConditionTransformation({
+        #         "category": "TODO" #unsupported
+        #     }),
+        #     rule_conditions=[
+        #         LogsourceCondition(category="create_remote_thread")
+        #     ]
+        # ),
         ProcessingItem(
-            identifier="trellix_create_remote_thread_eventtype",
+            identifier="trellix_file_eventtype",
             transformation=AddConditionTransformation({
-                "category": "TODO"
+                "category": ["file created (rule: filecreate)","file system"]
             }),
             rule_conditions=[
-                LogsourceCondition(category="create_remote_thread")
+                LogsourceCondition(category="file")
+            ]
+        ),
+        # ProcessingItem(
+        #     identifier="trellix_image_load_eventtype",
+        #     transformation=AddConditionTransformation({
+        #         "category": "TODO" #unsupported
+        #     }),
+        #     rule_conditions=[
+        #         LogsourceCondition(category="image_load")
+        #     ]
+        # ),
+        ProcessingItem(
+            identifier="trellix_network_connection_eventtype",
+            transformation=AddConditionTransformation({
+                "category": "network connection detected (rule: networkconnect)"
+            }),
+            rule_conditions=[
+                LogsourceCondition(category="network_connection")
+            ]
+        ),
+        # ProcessingItem(
+        #     identifier="trellix_pipe_created_eventtype",
+        #     transformation=AddConditionTransformation({
+        #         "category": "TODO" #unsupported
+        #     }),
+        #     rule_conditions=[
+        #         LogsourceCondition(category="pipe_created")
+        #     ]
+        # ),
+        ProcessingItem(
+            identifier="trellix_powershell_eventtype",
+            transformation=AddConditionTransformation({
+                "source": "microsoft-windows-powershell"
+            }),
+            rule_conditions=[
+                LogsourceCondition(category="powershell")
+            ]
+        ),
+        ProcessingItem(
+            identifier="trellix_dns_eventtype",
+            transformation=AddConditionTransformation({
+                "category": "dns query (rule: dnsquery)"
+            }),
+            rule_conditions=[
+                LogsourceCondition(category="dns_query")
+            ]
+        ),
+        ProcessingItem(
+            identifier="trellix_registry_eventtype",
+            transformation=AddConditionTransformation({
+                "category": ["registry value set (rule: registryevent)","registry object added or deleted (rule: registryevent)"]
+            }),
+            rule_conditions=[
+                LogsourceCondition(category="registry")
             ]
         )
     ]
@@ -120,7 +210,6 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
                 LogsourceCondition(product="windows")
             ]
         )
-        # more stuff
     ]
 
     change_logsource_info = [
@@ -132,20 +221,14 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
             ),
             rule_condition_linking=any,
             rule_conditions=[
-                LogsourceCondition(category="process_creation")
-                # LogsourceCondition(category="file_change"),
-                # LogsourceCondition(category="file_rename"),
-                # LogsourceCondition(category="file_delete"),
-                # LogsourceCondition(category="file_event"),
-                # LogsourceCondition(category="image_load"),
+                LogsourceCondition(category="process_creation"),
+                LogsourceCondition(category="file"),
+                LogsourceCondition(category="file_event"),
+                LogsourceCondition(category="powershell"),
                 # LogsourceCondition(category="pipe_creation"),
-                # LogsourceCondition(category="registry_add"),
-                # LogsourceCondition(category="registry_delete"),
-                # LogsourceCondition(category="registry_event"),
-                # LogsourceCondition(category="registry_set"),
-                # LogsourceCondition(category="dns"),
-                # LogsourceCondition(category="dns_query"),
-                # LogsourceCondition(category="network_connection"),
+                LogsourceCondition(category="registry"),
+                LogsourceCondition(category="dns_query"),
+                LogsourceCondition(category="network_connection")
                 # LogsourceCondition(category="firewall")
             ]
         ),
@@ -170,12 +253,12 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
             transformation=InvalidFieldTransformation("This pipeline only supports the following fields:\n{" + 
             '}, {'.join(sorted(set(
                 list(_flatten([[k,v] for t in translation_dict.keys() for k, v in
-                               translation_dict[t].items()]))
+                            translation_dict[t].items()]))
             )))),
             field_name_conditions=[
                 ExcludeFieldCondition(fields=list(set(
                     list(_flatten([[k, v] for t in translation_dict.keys() for k, v in
-                                   translation_dict[t].items()]))
+                                translation_dict[t].items()]))
                 )))
             ]
         )

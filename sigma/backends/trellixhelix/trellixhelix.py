@@ -92,9 +92,3 @@ class tqlBackend(TextQueryBackend):
     unbound_value_str_expression : ClassVar[str] = '"{value}"'
     unbound_value_num_expression : ClassVar[str] = '{value}' 
 
-    # Query finalization: appending and concatenating deferred query part
-
-    # TODO: implement custom methods for query elements not covered by the default backend base.
-    # Documentation: https://sigmahq-pysigma.readthedocs.io/en/latest/Backends.html
-
-    
