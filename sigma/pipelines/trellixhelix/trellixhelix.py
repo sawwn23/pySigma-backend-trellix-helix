@@ -31,7 +31,8 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
             "ClientAddress": "srcipv4",
             "CommandLine":"args",
             "ComputerName": "hostname",
-            "CurrentDirectory":"",
+            "CurrentDirectory":"processpath",
+            "Description": "errormessage", #helix use error message 
             "DestAddress": "dstipv4",
             "DestinationIp": "dstipv4",
             "DestinationPort": "dstport",
@@ -44,10 +45,11 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
             "IpAddress": "srcipv4",
             "IpPort": "srcport",
             "LogonGuid": "logonguid",
-            "LogonId": "loginid",
+            "LogonId": "logonid",
             "md5": "md5",
             "NewProcessId": "pid",
             "NewProcessName": "process",
+            "OriginalFileName": "original_file_name",
             "ParentCommandLine": "pargs",
             "ParentImage": "pprocess",
             "ParentProcessGuid": "pprocessguid",
@@ -57,6 +59,7 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
             "ProcessGuid": "processguid",
             "ProcessId": "pid",
             "ProcessName": "process",
+            "Product": "product",
             "Provider_Name": "source",
             "QueryName": "query",
             "QueryStatus": "statuscode",
@@ -84,35 +87,26 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
             rule_conditions=[
                 LogsourceCondition(product="windows")
             ]
-        ),
-        # need to add other class
-        ProcessingItem(
-            identifier="trellix_class_linux",
-            transformation=AddConditionTransformation({
-                "metaclass": "unix"
-            }),
-            rule_conditions=[
-                LogsourceCondition(product="linux")
-            ]
-        ),
-        ProcessingItem(
-            identifier="trellix_class_network",
-            transformation=AddConditionTransformation({
-                "metaclass": "network"
-            }),
-            rule_conditions=[
-                LogsourceCondition(product="network")
-            ]
-        ),
-        ProcessingItem(
-            identifier="trellix_class_web",
-            transformation=AddConditionTransformation({
-                "metaclass": "unix"
-            }),
-            rule_conditions=[
-                LogsourceCondition(product="webserver")
-            ]
         )
+        # need to add other product
+        # ProcessingItem(
+        #     identifier="trellix_class_network",
+        #     transformation=AddConditionTransformation({
+        #         "metaclass": "network"
+        #     }),
+        #     rule_conditions=[
+        #         LogsourceCondition(product="network")
+        #     ]
+        # ),
+        # ProcessingItem(
+        #     identifier="trellix_class_web",
+        #     transformation=AddConditionTransformation({
+        #         "metaclass": "unix"
+        #     }),
+        #     rule_conditions=[
+        #         LogsourceCondition(product="webserver")
+        #     ]
+        # )
     ]
 
     object_eventlog_filter = [
@@ -126,16 +120,6 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
                 LogsourceCondition(category="process_creation")
             ]
         ),
-        # need to add others category
-        # ProcessingItem(
-        #     identifier="trellix_create_remote_thread_eventtype",
-        #     transformation=AddConditionTransformation({
-        #         "category": "TODO" #unsupported
-        #     }),
-        #     rule_conditions=[
-        #         LogsourceCondition(category="create_remote_thread")
-        #     ]
-        # ),
         ProcessingItem(
             identifier="trellix_file_eventtype",
             transformation=AddConditionTransformation({
@@ -146,41 +130,23 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
             ]
         ),
         # ProcessingItem(
-        #     identifier="trellix_image_load_eventtype",
+        #     identifier="trellix_network_connection_eventtype",
         #     transformation=AddConditionTransformation({
-        #         "category": "TODO" #unsupported
+        #         "category": "network connection detected (rule: networkconnect)"
         #     }),
         #     rule_conditions=[
-        #         LogsourceCondition(category="image_load")
+        #         LogsourceCondition(category="network_connection") #initiated field not present
         #     ]
         # ),
-        ProcessingItem(
-            identifier="trellix_network_connection_eventtype",
-            transformation=AddConditionTransformation({
-                "category": "network connection detected (rule: networkconnect)"
-            }),
-            rule_conditions=[
-                LogsourceCondition(category="network_connection")
-            ]
-        ),
         # ProcessingItem(
-        #     identifier="trellix_pipe_created_eventtype",
+        #     identifier="trellix_powershell_eventtype",
         #     transformation=AddConditionTransformation({
-        #         "category": "TODO" #unsupported
+        #         "source": "microsoft-windows-powershell"
         #     }),
         #     rule_conditions=[
-        #         LogsourceCondition(category="pipe_created")
+        #         LogsourceCondition(category="powershell") #scriptblock in msg
         #     ]
         # ),
-        ProcessingItem(
-            identifier="trellix_powershell_eventtype",
-            transformation=AddConditionTransformation({
-                "source": "microsoft-windows-powershell"
-            }),
-            rule_conditions=[
-                LogsourceCondition(category="powershell")
-            ]
-        ),
         ProcessingItem(
             identifier="trellix_dns_eventtype",
             transformation=AddConditionTransformation({
@@ -189,16 +155,16 @@ def trellix_helix_pipeline() -> ProcessingPipeline:
             rule_conditions=[
                 LogsourceCondition(category="dns_query")
             ]
-        ),
-        ProcessingItem(
-            identifier="trellix_registry_eventtype",
-            transformation=AddConditionTransformation({
-                "category": ["registry value set (rule: registryevent)","registry object added or deleted (rule: registryevent)"]
-            }),
-            rule_conditions=[
-                LogsourceCondition(category="registry")
-            ]
         )
+        # ProcessingItem(
+        #     identifier="trellix_registry_eventtype",
+        #     transformation=AddConditionTransformation({
+        #         "category": ["registry value set (rule: registryevent)","registry object added or deleted (rule: registryevent)"]
+        #     }),
+        #     rule_conditions=[
+        #         LogsourceCondition(category="registry") # targetobject not present
+        #     ]
+        # )
     ]
 
     fields_mappings = [

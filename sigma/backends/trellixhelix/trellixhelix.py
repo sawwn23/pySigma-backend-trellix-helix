@@ -81,6 +81,7 @@ class tqlBackend(TextQueryBackend):
     # Field existence condition expressions.
     field_exists_expression : ClassVar[str] = "has({field})"
     field_not_exists_expression : ClassVar[str] = "missing({field})"
+    field_null_expression: ClassVar[str] = "missing({field})"
 
     # Field value in list, e.g. "field in (value list)" or "field containsall (value list)"
     convert_or_as_in : ClassVar[bool] = True                    

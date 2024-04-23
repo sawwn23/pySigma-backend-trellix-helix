@@ -15,6 +15,43 @@ This backend is currently maintained by:
 
 - [Saw Win Naung](https://github.com/sawwn23/)
 
+## Usage example
+
+### Sigma CLI
+
+You can quickly convert a single rule or rules in a directory structure using Sigma CLI. You can use:
+`sigma convert -t tqlBackend  -s ~/sigma/rules` where -t is the target query language and -s is the Sigma rule or rules directory you wish to convert.
+
+### Stand-alone Script
+
+The following example script demonstrates how you can use the Helix backend to generate TQL queries for the following Sigma rules:
+
+```shell
+python trellix_helix.py ../../sigma/rules-threat-hunting/windows/process_creation
+```
+
+```python
+# demonstrates basic usage of InsightIDR backend
+from sigma.collection import SigmaCollection
+from sigma.backends.trellixhelix import tqlBackend
+
+# create pipeline and backend
+trellixhelix_backend = tqlBackend()
+
+# load a ruleset
+process_start_rules = [r"C:\SigmaRules\rules\windows\process_creation\proc_creation_win_webshell_detection.yml",
+                       r"C:\SigmaRules\rules\windows\process_creation\proc_creation_win_cmd_delete.yml",
+                       r"C:\SigmaRules\rules\windows\process_creation\proc_creation_win_susp_rundll32_activity.yml"]
+
+process_start_rule_collection = SigmaCollection.load_ruleset(process_start_rules)
+
+# convert the rules
+for rule in process_start_rule_collection.rules:
+    print(rule.title + " conversion:")
+    print(trellixhelix_backend.convert_rule(rule)[0])
+    print("\n")
+```
+
 ## Side Notes & Limitations
 
 - Backend uses Trellix TQL
@@ -24,8 +61,8 @@ This backend is currently maintained by:
   - process_creation
   - file
   - file_event
-  - powershell
-  - registry
+    <!-- - powershell -->
+    <!-- - registry -->
   - dns_query
-  - network_connection
+  <!-- - network_connection -->
 - Any unsupported fields or categories will throw errors
