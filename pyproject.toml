@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "pySigma-backend-trellix-helix"
+name = "pySigma-backend-helix"
 version = "0.1.1"
 description = "Sigma backend for Trellix Query Language (TQL)"
 authors = ["Saw Win Naung <sawwinnnaung@gmail.com>"]
